@@ -2,16 +2,31 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const webpush = require('web-push');
 const connectDB = require('./config/db');
 
 const appointmentRoutes = require('./routes/appointments');
 const departmentRoutes = require('./routes/departments');
 const doctorRoutes = require('./routes/doctors');
+const subscribeRoutes = require('./routes/subscribe'); // NEW
 
 const app = express();
 
 // --- DB ---
 connectDB();
+
+// --- Web Push setup (NEW) ---
+// Only configure web-push if the VAPID keys are present, so the server
+// doesn't crash if you haven't set them yet.
+if (process.env.VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
+  webpush.setVapidDetails(
+    'mailto:care@nan-care.com', // change to your real contact email
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+} else {
+  console.warn('VAPID keys not set — push notifications are disabled.');
+}
 
 // --- Core middleware ---
 app.use(express.json());
@@ -53,6 +68,7 @@ app.get('/health', (req, res) => {
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/doctors', doctorRoutes);
+app.use('/api/subscribe', subscribeRoutes); // NEW
 
 // --- 404 handler ---
 app.use((req, res) => {

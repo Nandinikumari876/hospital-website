@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
+const webpush = require('web-push');
 const Appointment = require('../models/Appointment');
+const Subscription = require('../models/Subscription'); // NEW
 const adminAuth = require('../middleware/adminAuth');
 
 // POST /api/appointments  -> Public: create appointment request (from the website form)
@@ -62,6 +64,28 @@ router.patch('/:id', adminAuth, async (req, res) => {
 
     if (!appointment) {
       return res.status(404).json({ error: 'Appointment not found' });
+    }
+
+    // NEW: if the status was just set to 'confirmed', push a notification
+    // to whichever browser subscription is linked to this appointment.
+    if (status === 'confirmed') {
+      const sub = await Subscription.findOne({ appointmentId: appointment._id });
+      if (sub) {
+        const payload = JSON.stringify({
+          title: 'Appointment Confirmed',
+          body: `Hi ${appointment.fullName}, your appointment for ${appointment.department} is confirmed.`,
+        });
+        try {
+          await webpush.sendNotification(
+            { endpoint: sub.endpoint, keys: sub.keys },
+            payload
+          );
+        } catch (pushErr) {
+          // Don't fail the whole request just because the push failed
+          // (e.g. the subscription expired) — just log it.
+          console.error('Push notification failed:', pushErr.message);
+        }
+      }
     }
 
     res.json(appointment);
