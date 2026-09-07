@@ -9,7 +9,6 @@ const appointmentRoutes = require('./routes/appointments');
 const departmentRoutes = require('./routes/departments');
 const doctorRoutes = require('./routes/doctors');
 const subscribeRoutes = require('./routes/subscribe'); // NEW
-
 const app = express();
 
 // --- DB ---
