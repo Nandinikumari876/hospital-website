@@ -94,6 +94,31 @@ router.patch('/:id', adminAuth, async (req, res) => {
     if (!appointment) {
       return res.status(404).json({ error: 'Appointment not found' });
     }
+
+    // NEW: send a confirmation push to the patient when status becomes 'confirmed'
+    if (status === 'confirmed') {
+      try {
+        const patientSubs = await Subscription.find({
+          appointmentId: appointment._id,
+          isAdmin: false,
+        });
+        const payload = JSON.stringify({
+          title: 'Nan Care Hospital',
+          body: `Your appointment for ${appointment.department} has been confirmed.`,
+        });
+        await Promise.allSettled(
+          patientSubs.map((sub) =>
+            webpush.sendNotification(
+              { endpoint: sub.endpoint, keys: sub.keys },
+              payload
+            )
+          )
+        );
+      } catch (pushErr) {
+        console.error('Patient confirmation push failed:', pushErr.message);
+      }
+    }
+
     res.json(appointment);
   } catch (err) {
     res.status(500).json({ error: 'Failed to update appointment' });
