@@ -12,7 +12,11 @@ const subscribeRoutes = require('./routes/subscribe'); // NEW
 const app = express();
 
 // --- DB ---
+
+// --- DB ---
 connectDB();
+
+app.set('trust proxy', 1); // Railway ke proxy ke peeche chalne ke liye zaroori
 
 // --- Web Push setup (NEW) ---
 // Only configure web-push if the VAPID keys are present, so the server
