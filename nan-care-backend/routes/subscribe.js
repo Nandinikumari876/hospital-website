@@ -8,7 +8,7 @@ const adminAuth = require('../middleware/adminAuth');
 // after the user allows notifications. We just save it.
 router.post('/', async (req, res) => {
   try {
-    const { subscription, appointmentId } = req.body;
+    const { subscription, appointmentId, isAdmin } = req.body;
 
     if (!subscription || !subscription.endpoint || !subscription.keys) {
       return res.status(400).json({ error: 'Invalid subscription object' });
@@ -22,6 +22,7 @@ router.post('/', async (req, res) => {
         endpoint: subscription.endpoint,
         keys: subscription.keys,
         appointmentId: appointmentId || undefined,
+        isAdmin: !!isAdmin,
       },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );

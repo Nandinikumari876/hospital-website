@@ -21,12 +21,30 @@ router.post('/', async (req, res) => {
       message,
     });
 
+    // NEW: notify every admin browser that a new appointment came in
+    try {
+      const adminSubs = await Subscription.find({ isAdmin: true });
+      const payload = JSON.stringify({
+        title: 'New Appointment Request',
+        body: `${fullName} requested ${department}. Phone: ${phone}`,
+      });
+      await Promise.allSettled(
+        adminSubs.map((sub) =>
+          webpush.sendNotification(
+            { endpoint: sub.endpoint, keys: sub.keys },
+            payload
+          )
+        )
+      );
+    } catch (pushErr) {
+      console.error('Admin push notification failed:', pushErr.message);
+    }
+
     res.status(201).json({
       success: true,
       message: "Appointment request received. Our desk will call you shortly to confirm your slot.",
       appointment,
-    });
-  } catch (err) {
+    });  } catch (err) {
     if (err.name === 'ValidationError') {
       return res.status(400).json({ error: err.message });
     }
