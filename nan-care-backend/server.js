@@ -10,6 +10,7 @@ const departmentRoutes = require('./routes/departments');
 const doctorRoutes = require('./routes/doctors');
 const subscribeRoutes = require('./routes/subscribe'); // NEW
 const authRoutes = require('./routes/auth');
+const paymentRoutes = require('./routes/payment');
 const app = express();
 
 // --- DB ---
@@ -74,7 +75,7 @@ app.use('/api/departments', departmentRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/subscribe', subscribeRoutes); // NEW
 app.use('/api/auth', authRoutes);
-
+  app.use('/api/payment', paymentRoutes);
 // --- 404 handler ---
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
