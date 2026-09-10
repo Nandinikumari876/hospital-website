@@ -4,10 +4,11 @@ const webpush = require('web-push');
 const Appointment = require('../models/Appointment');
 const Subscription = require('../models/Subscription');
 const adminAuth = require('../middleware/adminAuth');
+const patientAuth = require('../middleware/patientAuth');  
 const { sendAppointmentEmail } = require('../lib/email'); // NEW
 
 // POST /api/appointments  -> Public: create appointment request (from the website form)
-router.post('/', async (req, res) => {
+router.post('/', patientAuth, async (req, res) => {
   try {
     const { fullName, phone, department, message } = req.body;
 
@@ -20,6 +21,7 @@ router.post('/', async (req, res) => {
       phone,
       department,
       message,
+      email: req.user.email,
     });
 
     // NEW: notify every admin browser that a new appointment came in

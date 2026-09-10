@@ -19,6 +19,14 @@ const appointmentSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    
+    email: {
+        type: String,
+        required: true,
+        trim: true,
+        lowercase: true,
+      },
+
     message: {
       type: String,
       trim: true,
