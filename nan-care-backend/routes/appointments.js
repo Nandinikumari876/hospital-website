@@ -68,6 +68,16 @@ router.post('/', patientAuth, async (req, res) => {
   }
 });
 
+// GET /api/appointments/mine  -> Patient only: get their own appointments
+router.get('/mine', patientAuth, async (req, res) => {
+  try {
+    const appointments = await Appointment.find({ email: req.user.email }).sort({ createdAt: -1 });
+    res.json(appointments);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch your appointments' });
+  }
+});
+
 // GET /api/appointments  -> Admin only: list all appointments
 router.get('/', adminAuth, async (req, res) => {
   try {
