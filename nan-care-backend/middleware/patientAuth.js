@@ -14,7 +14,8 @@ function patientAuth(req, res, next) {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = { id: decoded.userId, email: decoded.email };
     next();
-  } catch (err) {
+    } catch (err) {
+    console.error('JWT verify error:', err.message);
     return res.status(401).json({ error: 'Invalid or expired session. Please log in again.' });
   }
 }
