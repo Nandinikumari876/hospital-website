@@ -47,6 +47,14 @@ const appointmentSchema = new mongoose.Schema(
       enum: ['unpaid', 'paid'],
       default: 'unpaid',
     },
+     appointmentDate: {
+      type: String, // e.g. "2026-09-15"
+      default: null,
+    },
+    appointmentTime: {
+      type: String, // e.g. "11:30 AM"
+      default: null,
+    },
   },
   { timestamps: true },
   

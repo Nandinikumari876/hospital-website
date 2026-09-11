@@ -13,5 +13,20 @@ async function sendAppointmentEmail({ to, fullName, department, phone }) {
     console.error('Email send failed:', err.message);
   }
 }
+async function sendScheduleEmail({ to, fullName, department, appointmentDate, appointmentTime }) {
+  try {
+    await resend.emails.send({
+      from: 'Nan Care Hospital <onboarding@resend.dev>',
+      to,
+      subject: 'Your Appointment is Scheduled',
+      html: `<p>Hi ${fullName},</p>
+             <p>Your appointment for <b>${department}</b> has been scheduled.</p>
+             <p><b>Date:</b> ${appointmentDate}<br/><b>Time:</b> ${appointmentTime}</p>
+             <p>Payment received. See you at Nan Care Hospital.</p>`,
+    });
+  } catch (err) {
+    console.error('Schedule email send failed:', err.message);
+  }
+}
 
-module.exports = { sendAppointmentEmail };
+module.exports = { sendAppointmentEmail, sendScheduleEmail };

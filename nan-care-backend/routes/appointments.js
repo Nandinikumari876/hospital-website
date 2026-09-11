@@ -5,7 +5,7 @@ const Appointment = require('../models/Appointment');
 const Subscription = require('../models/Subscription');
 const adminAuth = require('../middleware/adminAuth');
 const patientAuth = require('../middleware/patientAuth');  
-const { sendAppointmentEmail } = require('../lib/email'); // NEW
+const { sendAppointmentEmail, sendScheduleEmail } = require('../lib/email');
 
 // POST /api/appointments  -> Public: create appointment request (from the website form)
 router.post('/', patientAuth, async (req, res) => {
@@ -136,7 +136,46 @@ router.patch('/:id', adminAuth, async (req, res) => {
     res.status(500).json({ error: 'Failed to update appointment' });
   }
 });
+// PATCH /api/appointments/:id/schedule  -> Admin only: set date & time, notify patient
+router.patch('/:id/schedule', adminAuth, async (req, res) => {
+  try {
+    const { appointmentDate, appointmentTime } = req.body;
 
+    if (!appointmentDate || !appointmentTime) {
+      return res.status(400).json({ error: 'appointmentDate and appointmentTime are required' });
+    }
+
+    const appointment = await Appointment.findById(req.params.id);
+    if (!appointment) {
+      return res.status(404).json({ error: 'Appointment not found' });
+    }
+
+    if (appointment.paymentStatus !== 'paid') {
+      return res.status(400).json({ error: 'Cannot schedule an unpaid appointment' });
+    }
+
+    appointment.appointmentDate = appointmentDate;
+    appointment.appointmentTime = appointmentTime;
+    await appointment.save();
+
+    // patient ko email bhejo
+    try {
+      await sendScheduleEmail({
+        to: appointment.email,
+        fullName: appointment.fullName,
+        department: appointment.department,
+        appointmentDate,
+        appointmentTime,
+      });
+    } catch (emailErr) {
+      console.error('Schedule email failed:', emailErr.message);
+    }
+
+    res.json({ success: true, appointment });
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to schedule appointment' });
+  }
+});
 // DELETE /api/appointments/:id  -> Admin only
 router.delete('/:id', adminAuth, async (req, res) => {
   try {
