@@ -173,6 +173,7 @@ router.patch('/:id/schedule', adminAuth, async (req, res) => {
 
     res.json({ success: true, appointment });
   } catch (err) {
+    console.error('Schedule appointment failed:', err);
     res.status(500).json({ error: 'Failed to schedule appointment' });
   }
 });
