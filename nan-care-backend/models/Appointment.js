@@ -38,6 +38,15 @@ const appointmentSchema = new mongoose.Schema(
       enum: ['pending', 'confirmed', 'cancelled', 'completed'],
       default: 'pending',
     },
+     amount: {
+      type: Number,
+      default: 500, // यहां अपनी असली consultation fee डालें (रुपयों में)
+    },
+    paymentStatus: {
+      type: String,
+      enum: ['unpaid', 'paid'],
+      default: 'unpaid',
+    },
   },
   { timestamps: true },
   

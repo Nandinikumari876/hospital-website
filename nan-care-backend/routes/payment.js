@@ -48,11 +48,13 @@ router.post('/create-order', patientAuth, async (req, res) => {
       keyId: process.env.RAZORPAY_KEY_ID,
       appointmentId: appointment._id,
     });
-  } catch (err) {
-    console.error('create-order failed:', err.message);
-    res.status(500).json({ error: 'Failed to create payment order' });
+    } catch (err) {
+    console.error('create-order failed:', err);
+    res.status(500).json({ error: 'Failed to create payment order', details: err.error?.description || err.message });
   }
 });
+
+// POST /api/payment/verify -> Patient only: verify payment signature
 
 // POST /api/payment/verify -> Patient only: verify payment signature
 router.post('/verify', patientAuth, async (req, res) => {
