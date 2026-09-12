@@ -7,6 +7,19 @@ const adminAuth = require('../middleware/adminAuth');
 const patientAuth = require('../middleware/patientAuth');  
 const { sendAppointmentEmail, sendScheduleEmail } = require('../lib/email');
 
+// Converts a 24-hour "HH:MM" string into "h:MM AM/PM" for emails.
+// If the value already has AM/PM in it, it's left untouched.
+function formatTime12Hour(time24) {
+  if (!time24) return '';
+  if (/am|pm/i.test(time24)) return time24;
+  const [hours, minutes] = time24.split(':');
+  const h = parseInt(hours, 10);
+  if (isNaN(h)) return time24;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return `${hour12}:${minutes} ${ampm}`;
+}
+
 // POST /api/appointments  -> Public: create appointment request (from the website form)
 router.post('/', patientAuth, async (req, res) => {
   try {
@@ -158,14 +171,14 @@ router.patch('/:id/schedule', adminAuth, async (req, res) => {
     appointment.appointmentTime = appointmentTime;
     await appointment.save();
 
-    // patient ko email bhejo
+    // patient ko email bhejo (time ko 12-hour AM/PM format mein bhejte hain)
     try {
       await sendScheduleEmail({
         to: appointment.email,
         fullName: appointment.fullName,
         department: appointment.department,
         appointmentDate,
-        appointmentTime,
+        appointmentTime: formatTime12Hour(appointmentTime),
       });
     } catch (emailErr) {
       console.error('Schedule email failed:', emailErr.message);
